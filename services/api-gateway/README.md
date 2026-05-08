@@ -27,3 +27,20 @@ Session management:
 ### Dev quickstart
 - Create tables: `python scripts/dev_init_db.py`
 - Run API: `python scripts/dev_run.py`
+
+### Docker (repo root)
+- Start dependencies + API: `docker compose up --build`
+- Initialize tables (one-time): `docker compose exec api-gateway python scripts/dev_init_db.py`
+
+## Incident Workspace (Module 2)
+APIs:
+- `POST /api/v1/incidents`
+- `GET /api/v1/incidents`
+- `GET /api/v1/incidents/{incident_id}`
+- `POST /api/v1/incidents/{incident_id}/attachments` (multipart: `kind` + `file`)
+- `GET /api/v1/incidents/{incident_id}/timeline`
+
+Attachments:
+- `kind=log` triggers auto timeline extraction (cheap regex heuristics; no LLM calls).
+- `kind=screenshot` accepts common image types.
+- `kind=yaml` accepts yaml/text.

@@ -17,5 +17,8 @@ class Settings:
     github_client_secret: str = os.getenv("GITHUB_CLIENT_SECRET", "")
     github_redirect_uri: str = os.getenv("GITHUB_REDIRECT_URI", "")
 
+    incident_storage_path: str = os.getenv("INCIDENT_STORAGE_PATH", "./.data/incidents")
+    max_upload_bytes: int = int(os.getenv("MAX_UPLOAD_BYTES", str(25 * 1024 * 1024)))
+
 
 settings = Settings()
