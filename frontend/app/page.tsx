@@ -57,6 +57,9 @@ export default function HomePage() {
               <Button asChild size="lg" variant="outline" className="border-white/15 bg-white/5 text-white hover:bg-white/10">
                 <Link href="/orchestrator">Run orchestrator</Link>
               </Button>
+              <Button asChild size="lg" variant="ghost" className="text-cyan-100 hover:bg-cyan-400/10 hover:text-cyan-50">
+                <Link href="/architecture">View architecture</Link>
+              </Button>
             </div>
           </div>
           <div className="grid w-full max-w-xl gap-4 sm:grid-cols-2">
@@ -106,6 +109,37 @@ export default function HomePage() {
               Zustand, React Query, Monaco Editor, and Recharts.
             </CardDescription>
           </CardHeader>
+        </Card>
+      </section>
+
+      <section className="mt-6 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <Card className="border-white/10 bg-white/5 text-white">
+          <CardHeader>
+            <CardTitle>Architecture quick view</CardTitle>
+            <CardDescription className="text-slate-300">
+              A compact map of the main runtime path from operator to AI reasoning.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-slate-300">
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">Frontend → Gateway → PostgreSQL / Redis</div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">Logs + Docs → RAG pipeline → ChromaDB</div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">Orchestrator → Agents → Groq synthesis</div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-white/10 bg-white/5 text-white">
+          <CardHeader>
+            <CardTitle>What the architecture page shows</CardTitle>
+            <CardDescription className="text-slate-300">
+              It breaks the platform into UI, backend, state, and AI layers with the data flow between them.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-3 md:grid-cols-2 text-sm text-slate-300">
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">Auth and session handling</div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">Incident persistence and timelines</div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">Redis queues and cache coordination</div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">RAG retrieval and agent synthesis</div>
+          </CardContent>
         </Card>
       </section>
     </main>

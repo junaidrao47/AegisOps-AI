@@ -23,9 +23,11 @@ Key routes used by the app:
 - `POST /auth/logout`
 - `GET /incidents`
 - `POST /incidents`
+- `GET /orchestrator/health`
 - `POST /orchestrator/analyze`
 - `POST /logs/detect-source`
-- `POST /logs/upload-brief`
+- `POST /logs/process-brief`
+- `POST /logs/upload`
 
 ## Setup
 1. Copy `.env.example` to `.env.local`

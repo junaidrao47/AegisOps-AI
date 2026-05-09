@@ -13,21 +13,30 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { api } from '@/lib/api';
+import type { LogDetectSourceResponse, LogIngestBriefResponse, LogIngestResponse } from '@/lib/types';
 
 export default function LogsPage() {
   const [logText, setLogText] = useState('2024-01-15T10:30:00Z CrashLoopBackOff on pod aegisops-api\n2024-01-15T10:30:05Z OOMKilled container');
   const [incidentId, setIncidentId] = useState('1');
   const [file, setFile] = useState<File | null>(null);
-  const [uploadResult, setUploadResult] = useState<string>('');
+  const [detectResult, setDetectResult] = useState<LogDetectSourceResponse | null>(null);
+  const [briefResult, setBriefResult] = useState<LogIngestBriefResponse | null>(null);
+  const [uploadResult, setUploadResult] = useState<LogIngestResponse | null>(null);
+
   const detectMutation = useMutation({
     mutationFn: () => api.detectLogSource(logText),
+    onSuccess: (data) => setDetectResult(data),
+  });
+  const briefMutation = useMutation({
+    mutationFn: () => api.processLogsBrief(logText, Number(incidentId)),
+    onSuccess: (data) => setBriefResult(data),
   });
   const uploadMutation = useMutation({
     mutationFn: async () => {
       if (!file) throw new Error('Choose a log file first');
-      return api.uploadLogsBrief(Number(incidentId), file);
+      return api.uploadLogs(Number(incidentId), file);
     },
-    onSuccess: () => setUploadResult('Uploaded and processed exported logs.'),
+    onSuccess: (data) => setUploadResult(data),
   });
 
   return (
@@ -54,14 +63,27 @@ export default function LogsPage() {
 
               <TabsContent value="paste" className="space-y-4">
                 <Textarea value={logText} onChange={(event) => setLogText(event.target.value)} />
-                <Button onClick={() => detectMutation.mutate()} disabled={detectMutation.isPending}>
-                  {detectMutation.isPending ? 'Detecting...' : 'Detect source'}
-                </Button>
-                {detectMutation.data ? (
+                <div className="flex flex-wrap gap-3">
+                  <Button onClick={() => detectMutation.mutate()} disabled={detectMutation.isPending}>
+                    {detectMutation.isPending ? 'Detecting...' : 'Detect source'}
+                  </Button>
+                  <Button variant="outline" onClick={() => briefMutation.mutate()} disabled={briefMutation.isPending}>
+                    {briefMutation.isPending ? 'Processing...' : 'Process brief'}
+                  </Button>
+                </div>
+                {detectResult ? (
                   <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-sm text-slate-300">
-                    <p className="text-white">Detected: {detectMutation.data.detected_source}</p>
-                    <p>Confidence: {Math.round(detectMutation.data.confidence * 100)}%</p>
-                    <pre className="mt-3 overflow-auto text-xs text-slate-400">{JSON.stringify(detectMutation.data.all_matches, null, 2)}</pre>
+                    <p className="text-white">Detected: {detectResult.detected_source}</p>
+                    <p>Confidence: {Math.round(detectResult.confidence * 100)}%</p>
+                    <pre className="mt-3 overflow-auto text-xs text-slate-400">{JSON.stringify(detectResult.all_matches, null, 2)}</pre>
+                  </div>
+                ) : null}
+                {briefResult ? (
+                  <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/5 p-4 text-sm text-slate-200">
+                    <p className="font-medium text-emerald-200">{briefResult.message ?? 'Brief analysis complete.'}</p>
+                    <p className="mt-2 text-slate-300">Source: {briefResult.source_type}</p>
+                    <p className="text-slate-300">Findings: {briefResult.findings_count}</p>
+                    <p className="text-slate-300">Critical: {briefResult.findings_summary.critical} · High: {briefResult.findings_summary.high}</p>
                   </div>
                 ) : null}
               </TabsContent>
@@ -79,7 +101,14 @@ export default function LogsPage() {
                   <UploadCloud className="mr-2 h-4 w-4" />
                   {uploadMutation.isPending ? 'Uploading...' : 'Upload and process'}
                 </Button>
-                {uploadResult ? <p className="text-sm text-emerald-200">{uploadResult}</p> : null}
+                {uploadResult ? (
+                  <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/5 p-4 text-sm text-slate-200">
+                    <p className="font-medium text-emerald-200">Uploaded and processed logs.</p>
+                    <p className="mt-2 text-slate-300">Source: {uploadResult.source_type}</p>
+                    <p className="text-slate-300">Findings: {uploadResult.findings_count}</p>
+                    <p className="text-slate-300">Processing time: {Math.round(uploadResult.processing_time_ms)} ms</p>
+                  </div>
+                ) : null}
               </TabsContent>
             </Tabs>
           </CardContent>

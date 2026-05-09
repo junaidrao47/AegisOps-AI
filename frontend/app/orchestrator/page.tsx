@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { BrainCircuit, Terminal } from 'lucide-react';
 
@@ -20,6 +20,7 @@ import { useSessionStore } from '@/stores/use-session-store';
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 
 export default function OrchestratorPage() {
+  const accessToken = useSessionStore((state) => state.accessToken);
   const activeIncidentId = useSessionStore((state) => state.activeIncidentId);
   const [incidentType, setIncidentType] = useState('kubernetes');
   const [summary, setSummary] = useState('API pods are crashing after a deployment');
@@ -27,6 +28,12 @@ export default function OrchestratorPage() {
   const [tags, setTags] = useState('k8s,cicd');
   const [logText, setLogText] = useState('Back-off restarting failed container\nError: OOMKilled container\nImagePullBackOff for aegisops-api:latest');
   const [result, setResult] = useState<OrchestratorAnalyzeResponse | null>(null);
+  const orchestratorHealthQuery = useQuery({
+    queryKey: ['orchestrator-health'],
+    queryFn: api.orchestratorHealth,
+    enabled: Boolean(accessToken),
+    retry: false,
+  });
 
   const analyzeMutation = useMutation({
     mutationFn: () =>
@@ -107,6 +114,19 @@ export default function OrchestratorPage() {
               Output
             </CardTitle>
             <CardDescription>Results, agent findings, and remediation synthesis from the API gateway.</CardDescription>
+            <div className="mt-2 rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-slate-300">
+              {accessToken ? (
+                orchestratorHealthQuery.data ? (
+                  <span>
+                    Orchestrator is {orchestratorHealthQuery.data.enabled ? 'enabled' : 'disabled'} and {orchestratorHealthQuery.data.available ? 'available' : 'unavailable'}.
+                  </span>
+                ) : (
+                  <span>Checking orchestrator health...</span>
+                )
+              ) : (
+                <span>Log in to verify orchestrator health.</span>
+              )}
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             {result ? (

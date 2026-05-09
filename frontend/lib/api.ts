@@ -2,14 +2,17 @@ import type {
   AuthRequest,
   IncidentCreateRequest,
   IncidentRead,
+  LogIngestBriefResponse,
+  LogIngestResponse,
   LogDetectSourceResponse,
   OrchestratorAnalyzeRequest,
   OrchestratorAnalyzeResponse,
+  OrchestratorHealthResponse,
   TokenPair,
 } from './types';
 import { getAccessToken } from './auth';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8000/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '/api/v1';
 
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
@@ -51,6 +54,7 @@ async function safeDetail(response: Response) {
 
 export const api = {
   health: () => request<{ status: string }>('/health'),
+  orchestratorHealth: () => request<OrchestratorHealthResponse>('/orchestrator/health'),
   register: (payload: AuthRequest) => request<TokenPair>('/auth/register', { method: 'POST', body: JSON.stringify(payload) }),
   login: (payload: AuthRequest) => request<TokenPair>('/auth/login', { method: 'POST', body: JSON.stringify(payload) }),
   refresh: (refresh_token: string) => request<TokenPair>('/auth/refresh', { method: 'POST', body: JSON.stringify({ refresh_token }) }),
@@ -62,14 +66,14 @@ export const api = {
   detectLogSource: (log_text: string) =>
     request<LogDetectSourceResponse>('/logs/detect-source', { method: 'POST', body: JSON.stringify({ log_text }) }),
   processLogsBrief: (log_text: string, incident_id?: number) =>
-    request('/logs/process-brief', {
+    request<LogIngestBriefResponse>('/logs/process-brief', {
       method: 'POST',
       body: JSON.stringify({ log_text, incident_id }),
     }),
-  uploadLogsBrief: (incident_id: number, file: File) => {
+  uploadLogs: (incident_id: number, file: File) => {
     const formData = new FormData();
     formData.append('incident_id', String(incident_id));
     formData.append('file', file);
-    return request<Record<string, unknown>>('/logs/upload-brief', { method: 'POST', body: formData });
+    return request<LogIngestResponse>('/logs/upload', { method: 'POST', body: formData });
   },
 };

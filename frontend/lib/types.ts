@@ -58,8 +58,76 @@ export type OrchestratorAnalyzeResponse = {
   errors: string[];
 };
 
+export type OrchestratorHealthResponse = {
+  enabled: boolean;
+  available: boolean;
+  path: string;
+  auto_analyze_logs: boolean;
+};
+
 export type LogDetectSourceResponse = {
   detected_source: string;
   confidence: number;
   all_matches: Record<string, number>;
+};
+
+export type LogFindingSummary = {
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+  total: number;
+};
+
+export type LogFinding = {
+  category: string;
+  severity: string;
+  title: string;
+  evidence: string | null;
+  source_type: string;
+  confidence: number;
+  timestamp: string | null;
+};
+
+export type LogIngestBriefResponse = {
+  success: boolean;
+  source_type: string;
+  total_lines: number;
+  parsed_lines: number;
+  failed_lines: number;
+  chunks_count: number;
+  findings_count: number;
+  findings_summary: LogFindingSummary;
+  critical_findings: LogFinding[];
+  high_findings: LogFinding[];
+  processing_time_ms: number;
+  message: string | null;
+};
+
+export type LogIngestResponse = {
+  success: boolean;
+  source_type: string;
+  total_lines: number;
+  parsed_lines: number;
+  failed_lines: number;
+  chunks_count: number;
+  findings_count: number;
+  findings_summary: LogFindingSummary;
+  findings: LogFinding[];
+  chunks: Array<{
+    index: number;
+    text: string;
+    start_line: number;
+    end_line: number;
+    checksum: string;
+  }>;
+  processing_time_ms: number;
+  metadata: {
+    classification_confidence: number | null;
+    classification_source: string | null;
+    parser_source: string | null;
+    parser_metadata: Record<string, unknown>;
+    incident_id: number | null;
+    attachment_id: number | null;
+  };
 };

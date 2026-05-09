@@ -38,6 +38,7 @@ services:
       # Override container-to-container connectivity
       DATABASE_URL: postgresql+psycopg://aegisops:aegisops@postgres:5432/aegisops
       REDIS_URL: redis://redis:6379/0
+      ORCHESTRATOR_PATH: /orchestrator
     ports:
       - "8000:8000"
     depends_on:
@@ -47,6 +48,7 @@ services:
         condition: service_healthy
     volumes:
       - ./services/api-gateway:/app
+      - ./services/ai-orchestrator:/orchestrator
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
 volumes:
