@@ -20,5 +20,13 @@ class Settings:
     incident_storage_path: str = os.getenv("INCIDENT_STORAGE_PATH", "./.data/incidents")
     max_upload_bytes: int = int(os.getenv("MAX_UPLOAD_BYTES", str(25 * 1024 * 1024)))
 
+    orchestrator_enabled: bool = os.getenv("ORCHESTRATOR_ENABLED", "true").lower() in {"1", "true", "yes"}
+    orchestrator_path: str = os.getenv("ORCHESTRATOR_PATH", "../ai-orchestrator")
+    orchestrator_auto_analyze_logs: bool = os.getenv("ORCHESTRATOR_AUTO_ANALYZE_LOGS", "true").lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+
 
 settings = Settings()
