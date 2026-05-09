@@ -12,6 +12,7 @@ from aegis_ai.agents.remediation.agent import recommend_fixes
 from aegis_ai.agents.security.agent import analyze_security
 from aegis_ai.orchestration.router import route
 from aegis_ai.orchestration.state import AgentResult, IncidentContext
+from aegis_ai.agents.root_cause.agent import analyze_root_cause
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +33,12 @@ def build_graph():
         agents_to_run = route(ctx)
         _run_parallel_agents(ctx, agents_to_run)
         _merge_shared_context(ctx)
+        # Run Root Cause Analysis after other agents have populated shared_context
+        try:
+            rc_result = analyze_root_cause(ctx)
+            ctx.agent_results["root_cause"] = rc_result
+        except Exception:  # pragma: no cover - safety net
+            logger.exception("Root cause analysis failed")
         recommend_fixes(ctx)
         return ctx
 
